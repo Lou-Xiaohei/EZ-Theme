@@ -51,12 +51,15 @@
       </div>
 
       <div class="dashboard-card notice-card" :class="{'card-animate': !loading.notices}"
-           v-if="notices && notices.data && notices.data.length > 0" style="animation-delay: 0.2s">
+           v-if="notices && notices.data && notices.data.length > 0" 
+           :style="{
+             animationDelay: '0.2s',
+             backgroundImage: notices.data[currentNoticeIndex] && notices.data[currentNoticeIndex].img_url 
+               ? `url(${notices.data[currentNoticeIndex].img_url})` 
+               : 'none'
+           }">
         <div class="card-header">
           <h2 class="card-title">{{ $t('dashboard.siteAnnouncement') }}</h2>
-          <div class="notice-counter">
-            {{ $t('common.noticeCount', {current: currentNoticeIndex + 1, total: notices.data.length}) }}
-          </div>
         </div>
         <div v-if="loading.notices" class="card-body skeleton-loading">
           <div class="skeleton-row"></div>
@@ -72,23 +75,9 @@
                 <div class="notice-nav">
                   <button
                       class="btn-notice"
-                      @click="prevNotice"
-                      :disabled="currentNoticeIndex <= 0">
-                    <IconChevronLeft :size="16"/>
-                    {{ $t('common.prevNotice') }}
-                  </button>
-                  <button
-                      class="btn-notice"
                       @click="showNoticeModal">
                     <IconEye :size="16"/>
                     {{ $t('common.viewDetails') }}
-                  </button>
-                  <button
-                      class="btn-notice"
-                      @click="nextNotice"
-                      :disabled="currentNoticeIndex >= notices.data.length - 1">
-                    {{ $t('common.nextNotice') }}
-                    <IconChevronRight :size="16"/>
                   </button>
                 </div>
               </div>
@@ -2319,6 +2308,48 @@ export default {
 
   .notice-card {
     margin-bottom: 24px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
+    transition: background-image 0.5s ease-in-out;
+    min-height: 200px;
+    
+    @media (max-width: 768px) {
+      min-height: 180px;
+    }
+    
+    // 添加遮罩层，确保文字可读性
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5) !important;
+      z-index: 1;
+    }
+    
+    // 夜间模式下的遮罩层
+    .dark-theme &::before {
+      background: rgba(0, 0, 0, 0.8) !important;
+    }
+    
+    // 确保卡片内容在遮罩层之上
+    .card-header,
+    .card-body {
+      position: relative;
+      z-index: 2;
+    }
+    
+    // 增加卡片内边距
+    padding: 30px 20px;
+    
+    .card-header {
+      margin-bottom: 20px;
+    }
 
     .card-header {
       display: flex;
